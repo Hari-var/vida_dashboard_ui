@@ -26,6 +26,16 @@ export default function Runs() {
     placeholderData: (prev) => prev,
   });
 
+  // Prefetch next page for instant navigation
+  const qcPrefetch = useQueryClient();
+  useMemo(() => {
+    qcPrefetch.prefetchQuery({
+      queryKey: runKeys.paginated(offset + PAGE_SIZE, PAGE_SIZE),
+      queryFn: ({ signal }) => fetchRunsPaginated(offset + PAGE_SIZE, PAGE_SIZE, signal),
+      staleTime: 20_000,
+    });
+  }, [offset, qcPrefetch]);
+
   const agentsQ = useQuery({ queryKey: agentKeys.all, queryFn: ({ signal }) => fetchAgents(signal), staleTime: 60_000 });
 
   const deleteMut = useMutation({
@@ -38,7 +48,9 @@ export default function Runs() {
   const agentMap = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a])), [agents]);
 
   const rawRuns = Array.isArray(data) ? data : (data?.items || data?.runs || []);
-  const total = data?.total ?? rawRuns.length;
+  // API returns plain array — detect end by checking if count < PAGE_SIZE
+  const hasMore = rawRuns.length === PAGE_SIZE;
+  const hasPrev = offset > 0;
 
   const filtered = useMemo(() => {
     return rawRuns.filter((r) => {
@@ -48,7 +60,6 @@ export default function Runs() {
     });
   }, [rawRuns, statusFilter, agentFilter]);
 
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.floor(offset / PAGE_SIZE);
 
   if (isLoading && !data) return <Loading />;
@@ -63,7 +74,7 @@ export default function Runs() {
       />
 
       <Panel
-        title={`Runs (${total})`}
+        title={`Runs (${filtered.length} shown)`}
         flush
         actions={
           <div className="filters">
@@ -86,6 +97,7 @@ export default function Runs() {
           rows={filtered}
           onRowClick={(r) => navigate(`/runs/${r.id}`)}
           defaultSort={{ key: "start_time", dir: "desc" }}
+          pageSize={PAGE_SIZE}
           emptyText="No runs match these filters."
           columns={[
             { key: "id", label: "Run", width: 60, render: (r) => <span className="mono">#{r.id}</span> },
@@ -105,12 +117,12 @@ export default function Runs() {
             },
           ]}
         />
-        {pages > 1 && (
+        {(hasPrev || hasMore) && (
           <div className="pager">
-            <span className="text-sm text-muted">Page {currentPage + 1} of {pages} · {total} total</span>
+            <span className="text-sm text-muted">Page {currentPage + 1} · {rawRuns.length} items</span>
             <div className="pager-btns">
-              <button className="btn btn-sm" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>Previous</button>
-              <button className="btn btn-sm" disabled={offset + PAGE_SIZE >= total} onClick={() => setOffset(offset + PAGE_SIZE)}>Next</button>
+              <button className="btn btn-sm" disabled={!hasPrev} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>Previous</button>
+              <button className="btn btn-sm" disabled={!hasMore} onClick={() => setOffset(offset + PAGE_SIZE)}>Next</button>
             </div>
           </div>
         )}

@@ -136,7 +136,7 @@ export default function Dashboard() {
   const taskBreak  = useQuery({ queryKey: dashboardKeys.taskBreakdown, queryFn: ({ signal }) => fetchTaskBreakdown(signal),     ...QUERY_OPTS, refetchInterval });
   const runBreak   = useQuery({ queryKey: dashboardKeys.runBreakdown,  queryFn: ({ signal }) => fetchRunBreakdown(signal),      ...QUERY_OPTS, refetchInterval });
   const agents     = useQuery({ queryKey: agentKeys.withMetrics,       queryFn: ({ signal }) => fetchAgentsWithMetrics(signal), ...QUERY_OPTS, refetchInterval });
-  const recentRuns = useQuery({ queryKey: runKeys.recent(10),          queryFn: ({ signal }) => fetchRecentRuns(10, signal),    ...QUERY_OPTS, refetchInterval });
+  const recentRuns = useQuery({ queryKey: runKeys.recent(8),          queryFn: ({ signal }) => fetchRecentRuns(8, signal),    ...QUERY_OPTS, refetchInterval });
 
   const s = summary.data || {};
 

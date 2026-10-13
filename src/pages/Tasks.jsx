@@ -69,6 +69,16 @@ export default function Tasks() {
     placeholderData: (prev) => prev,
   });
 
+  // Prefetch next page for instant navigation
+  const qcPrefetch = useQueryClient();
+  useMemo(() => {
+    qcPrefetch.prefetchQuery({
+      queryKey: taskKeys.paginated(offset + PAGE_SIZE, PAGE_SIZE),
+      queryFn: ({ signal }) => fetchTasksPaginated(offset + PAGE_SIZE, PAGE_SIZE, signal),
+      staleTime: 20_000,
+    });
+  }, [offset, qcPrefetch]);
+
   const agentsQ = useQuery({ queryKey: agentKeys.all, queryFn: ({ signal }) => fetchAgents(signal), staleTime: 60_000 });
 
   const createMut = useMutation({
@@ -93,7 +103,9 @@ export default function Tasks() {
   const agentMap = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a])), [agents]);
 
   const rawTasks = Array.isArray(data) ? data : (data?.items || data?.tasks || []);
-  const total = data?.total ?? rawTasks.length;
+  // API returns plain array — detect end by checking if count < PAGE_SIZE
+  const hasMore = rawTasks.length === PAGE_SIZE;
+  const hasPrev = offset > 0;
 
   const filtered = useMemo(() => {
     return rawTasks.filter((t) => {
@@ -103,7 +115,6 @@ export default function Tasks() {
     });
   }, [rawTasks, statusFilter, agentFilter]);
 
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.floor(offset / PAGE_SIZE);
 
   if (isLoading && !data) return <Loading />;
@@ -123,7 +134,7 @@ export default function Tasks() {
       />
 
       <Panel
-        title={`Tasks (${total})`}
+        title={`Tasks (${filtered.length} shown)`}
         flush
         actions={
           <div className="filters">
@@ -146,6 +157,7 @@ export default function Tasks() {
           rows={filtered}
           onRowClick={(t) => navigate(`/tasks/${t.id}`)}
           defaultSort={{ key: "start_time", dir: "desc" }}
+          pageSize={PAGE_SIZE}
           emptyText="No tasks match these filters."
           columns={[
             { key: "id", label: "ID", width: 60, render: (t) => <span className="mono text-muted">#{t.id}</span> },
@@ -167,12 +179,12 @@ export default function Tasks() {
             },
           ]}
         />
-        {pages > 1 && (
+        {(hasPrev || hasMore) && (
           <div className="pager">
-            <span className="text-sm text-muted">Page {currentPage + 1} of {pages} · {total} total</span>
+            <span className="text-sm text-muted">Page {currentPage + 1} · {rawTasks.length} items</span>
             <div className="pager-btns">
-              <button className="btn btn-sm" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>Previous</button>
-              <button className="btn btn-sm" disabled={offset + PAGE_SIZE >= total} onClick={() => setOffset(offset + PAGE_SIZE)}>Next</button>
+              <button className="btn btn-sm" disabled={!hasPrev} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>Previous</button>
+              <button className="btn btn-sm" disabled={!hasMore} onClick={() => setOffset(offset + PAGE_SIZE)}>Next</button>
             </div>
           </div>
         )}
