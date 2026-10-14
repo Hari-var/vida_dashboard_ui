@@ -46,7 +46,7 @@ code{font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px sol
 .sidebar{width:var(--sidebar-w);flex:none;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:width var(--transition);overflow:hidden}
 .sidebar.collapsed{width:56px}
 .sidebar-header{display:flex;align-items:center;gap:10px;padding:16px 14px 12px;border-bottom:1px solid var(--border);min-height:var(--topbar-h)}
-.sidebar-logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--blue) 0%,var(--violet) 100%);display:flex;align-items:center;justify-content:center;flex:none;font-size:14px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.sidebar-logo{width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center}
 .sidebar-brand{font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden}
 .sidebar-brand span{color:var(--blue)}
 .sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
