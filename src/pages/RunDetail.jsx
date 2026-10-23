@@ -13,6 +13,8 @@ export default function RunDetail() {
   const { tick } = useApiContext();
   const [tab, setTab] = useState("result");
 
+  const fmt = (n) => typeof n === "number" ? n.toLocaleString() : "—";
+
   const run = useQuery({ queryKey: [...runKeys.detail(runId), tick], queryFn: ({ signal }) => fetchRun(runId, signal), staleTime: 20_000 });
   const task = useQuery({
     queryKey: [...taskKeys.detail(run.data?.task_id), tick],
@@ -67,6 +69,7 @@ export default function RunDetail() {
           { id: "result", label: "Result" },
           { id: "raw", label: "Raw Result" },
           { id: "prompt", label: "Run Prompt" },
+          ...(r.usage_details ? [{ id: "tokens", label: "Token Usage" }] : []),
         ]}
       />
 
@@ -83,6 +86,25 @@ export default function RunDetail() {
       {tab === "prompt" && (
         <Panel title="Run Prompt">
           <TextBlock text={r.run_prompt} empty="No prompt stored for this run." />
+        </Panel>
+      )}
+      {tab === "tokens" && r.usage_details && (
+        <Panel title="Token Usage">
+          <div className="kpi-grid" style={{ marginBottom: 0 }}>
+            {[
+              { label: "Total Tokens",        key: "total_token_count" },
+              { label: "Input Tokens",         key: "input_token_count" },
+              { label: "Output Tokens",        key: "output_token_count" },
+              { label: "Cache Write",          key: "cache_creation_input_token_count" },
+              { label: "Cache Read",           key: "cache_read_input_token_count" },
+              { label: "Reasoning Tokens",     key: "reasoning_output_token_count" },
+            ].map(({ label, key }) => (
+              <div key={key} className="kpi-card">
+                <span className="kpi-label">{label}</span>
+                <span className="kpi-value">{fmt(r.usage_details[key])}</span>
+              </div>
+            ))}
+          </div>
         </Panel>
       )}
     </>

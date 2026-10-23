@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Bot, ListTodo, Play, CheckCircle, XCircle, Clock, TrendingUp } from "lucide-react";
+import { Bot, ListTodo, Play, CheckCircle, XCircle, Clock, TrendingUp, Coins } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { fetchDashboardSummary, fetchTaskBreakdown, fetchRunBreakdown, dashboardKeys } from "../api/dashboard.js";
+import { fetchDashboardSummary, fetchTaskBreakdown, fetchRunBreakdown, fetchTokenUsage, dashboardKeys } from "../api/dashboard.js";
 import { fetchAgentsWithMetrics, agentKeys } from "../api/agents.js";
 import { fetchRecentRuns, runKeys } from "../api/runs.js";
 import { useApiContext } from "../api/ApiContext.jsx";
@@ -20,6 +20,21 @@ const STATUS_COLORS = {
 };
 
 const getColor = (s) => STATUS_COLORS[(s || "").toLowerCase()] || "#64748b";
+
+/* ---------- Layout ----------
+   Self-contained auto-fit grids so rows pack evenly and wrap cleanly,
+   independent of the global .grid-2 / .grid-main-aside / .kpi-grid rules. */
+const GAP = 16;
+const gridOf = (min) => ({
+  display: "grid",
+  gridTemplateColumns: `repeat(auto-fit, minmax(min(${min}px, 100%), 1fr))`,
+  gap: GAP,
+  alignItems: "stretch",
+  marginBottom: GAP,
+});
+const stack = { display: "flex", flexDirection: "column", gap: GAP };
+const TOOLTIP_STYLE = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12 };
+const CHART_HEIGHT = 200;
 
 // API returns: {"1":{"success":48,"failed":8},"2":{...}} — agent-keyed buckets
 // Aggregate all buckets into a single status->count map
@@ -63,19 +78,19 @@ function resolveKpi(s, keys) {
 function StatusPieChart({ data }) {
   const chartData = useMemo(() => normalizeBreakdown(data), [data]);
   if (!chartData.length) {
-    return <div className="state state-empty" style={{ height: 180 }}>No data available</div>;
+    return <div className="state state-empty" style={{ height: CHART_HEIGHT }}>No data available</div>;
   }
   const total = chartData.reduce((s, d) => s + d.value, 0);
   return (
     <div>
-      <ResponsiveContainer width="100%" height={180}>
+      <ResponsiveContainer width="100%" height={CHART_HEIGHT - 20}>
         <PieChart>
-          <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
+          <Pie data={chartData} cx="50%" cy="50%" innerRadius={45} outerRadius={72} paddingAngle={2} dataKey="value">
             {chartData.map((entry, i) => <Cell key={i} fill={getColor(entry.name)} />)}
           </Pie>
           <Tooltip
             formatter={(v, n) => [`${v} (${total ? Math.round((v / total) * 100) : 0}%)`, n]}
-            contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12 }}
+            contentStyle={TOOLTIP_STYLE}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -98,14 +113,14 @@ function AgentBar({ data }) {
       success: a.metrics?.total_success_runs ?? a.total_success_runs ?? 0,
       failed: a.metrics?.total_fail_runs ?? a.total_fail_runs ?? 0,
     })), [data]);
-  if (!chartData.length) return <div className="state state-empty">No agents</div>;
+  if (!chartData.length) return <div className="state state-empty" style={{ height: CHART_HEIGHT }}>No agents</div>;
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
       <BarChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
         <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--ink3)" }} />
         <YAxis tick={{ fontSize: 11, fill: "var(--ink3)" }} allowDecimals={false} />
-        <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12 }} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} />
         <Bar dataKey="success" fill="#22c55e" name="Success" radius={[2, 2, 0, 0]} />
         <Bar dataKey="failed" fill="#ef4444" name="Failed" radius={[2, 2, 0, 0]} />
       </BarChart>
@@ -127,6 +142,86 @@ const KPI_DEFS = [
   { label: "Success Rate",    keys: ["success_rate"],                       icon: TrendingUp,  accent: "cyan"   },
 ];
 
+const TOKEN_KPIS = [
+  { label: "Total Tokens", key: "total_token_count",                 primary: true },
+  { label: "Input",        key: "input_token_count" },
+  { label: "Output",       key: "output_token_count" },
+  { label: "Cache Write",  key: "cache_creation_input_token_count" },
+  { label: "Cache Read",   key: "cache_read_input_token_count" },
+  { label: "Reasoning",    key: "reasoning_output_token_count" },
+];
+
+const fmtNum = (n) => (typeof n === "number" ? n.toLocaleString() : "0");
+
+/* Token totals — compact strip shown near the top */
+function TokenSummary({ query }) {
+  const t = query.data?.totals || {};
+  return (
+    <Panel title="Token Usage" actions={<Coins size={15} style={{ color: "var(--amber)" }} />}>
+      {query.isLoading ? (
+        <div className="skeleton" style={{ height: 64 }} />
+      ) : query.error ? (
+        <ErrorState error={query.error} onRetry={query.refetch} />
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(140px, 100%), 1fr))", gap: 12 }}>
+          {TOKEN_KPIS.map(({ label, key, primary }) => (
+            <div
+              key={key}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid var(--border)",
+                background: primary ? "var(--surface-2, var(--surface))" : "transparent",
+                minWidth: 0,
+              }}
+            >
+              <span className="kpi-label">{label}</span>
+              <span
+                className="kpi-value mono"
+                style={{ fontSize: primary ? "1.5rem" : "1.2rem", overflow: "hidden", textOverflow: "ellipsis" }}
+              >
+                {fmtNum(t[key])}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+/* Per-agent token table — lower priority, stays at the bottom */
+function TokenByAgent({ query }) {
+  const byAgent = query.data?.by_agent || {};
+  const rows = Object.entries(byAgent).filter(([, v]) => v.total_token_count > 0);
+  if (query.isLoading || query.error || !rows.length) return null;
+  return (
+    <Panel title="Token Usage by Agent">
+      <div style={{ overflowX: "auto" }}>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Agent</th>
+              {TOKEN_KPIS.map(({ label }) => <th key={label} style={{ textAlign: "right" }}>{label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([agentId, v]) => (
+              <tr key={agentId}>
+                <td><Link to={`/agents/${agentId}`}>Agent {agentId}</Link></td>
+                {TOKEN_KPIS.map(({ key }) => <td key={key} style={{ textAlign: "right" }} className="mono">{fmtNum(v[key])}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Panel>
+  );
+}
+
 export default function Dashboard() {
   const { autoRefresh } = useApiContext();
   const navigate = useNavigate();
@@ -137,13 +232,15 @@ export default function Dashboard() {
   const runBreak   = useQuery({ queryKey: dashboardKeys.runBreakdown,  queryFn: ({ signal }) => fetchRunBreakdown(signal),      ...QUERY_OPTS, refetchInterval });
   const agents     = useQuery({ queryKey: agentKeys.withMetrics,       queryFn: ({ signal }) => fetchAgentsWithMetrics(signal), ...QUERY_OPTS, refetchInterval });
   const recentRuns = useQuery({ queryKey: runKeys.recent(8),          queryFn: ({ signal }) => fetchRecentRuns(8, signal),    ...QUERY_OPTS, refetchInterval });
-
-  const s = summary.data || {};
+  const tokenUsage = useQuery({ queryKey: dashboardKeys.tokenUsage,   queryFn: ({ signal }) => fetchTokenUsage(signal),       ...QUERY_OPTS, refetchInterval });
 
   const displayKpis = useMemo(() => {
-    if (!summary.data) return KPI_DEFS.slice(0, 4);
+    const s = summary.data;
+    if (!s) return KPI_DEFS.slice(0, 4);
     return KPI_DEFS.filter(({ keys }) => keys.some((k) => k in s));
-  }, [summary.data, s]);
+  }, [summary.data]);
+
+  const s = summary.data || {};
 
   return (
     <>
@@ -156,45 +253,54 @@ export default function Dashboard() {
 
       {summary.error && !summary.data && <ErrorState error={summary.error} onRetry={summary.refetch} />}
 
+      {/* 1. Headline KPIs */}
       {summary.isLoading ? (
         <SkeletonKpiGrid count={4} />
       ) : (
-        <div className="kpi-grid">
+        <div style={gridOf(150)}>
           {displayKpis.map(({ label, keys, icon, accent }) => (
             <KpiCard key={label} label={label} value={resolveKpi(s, keys)} accent={accent} icon={icon} />
           ))}
         </div>
       )}
 
-      <div className="grid-2">
-        <Panel title="Task Status Distribution" actions={<Link to="/tasks" className="btn btn-sm btn-ghost">View all</Link>}>
+      {/* 2. Token usage — moved up, right under the KPIs */}
+      <div style={{ marginBottom: GAP }}>
+        <TokenSummary query={tokenUsage} />
+      </div>
+
+      {/* 3. Charts — three equal panels that wrap together */}
+      <div style={gridOf(300)}>
+        <Panel title="Task Status" actions={<Link to="/tasks" className="btn btn-sm btn-ghost">View all</Link>}>
           {taskBreak.isLoading
-            ? <div className="skeleton" style={{ height: 220 }} />
+            ? <div className="skeleton" style={{ height: CHART_HEIGHT }} />
             : taskBreak.error
               ? <ErrorState error={taskBreak.error} onRetry={taskBreak.refetch} />
               : <StatusPieChart data={taskBreak.data} />}
         </Panel>
-        <Panel title="Run Status Distribution" actions={<Link to="/runs" className="btn btn-sm btn-ghost">View all</Link>}>
+
+        <Panel title="Run Status" actions={<Link to="/runs" className="btn btn-sm btn-ghost">View all</Link>}>
           {runBreak.isLoading
-            ? <div className="skeleton" style={{ height: 220 }} />
+            ? <div className="skeleton" style={{ height: CHART_HEIGHT }} />
             : runBreak.error
               ? <ErrorState error={runBreak.error} onRetry={runBreak.refetch} />
               : <StatusPieChart data={runBreak.data} />}
         </Panel>
-      </div>
 
-      <div className="grid-main-aside">
         <Panel title="Agent Performance" actions={<Link to="/agents" className="btn btn-sm btn-ghost">View all</Link>}>
           {agents.isLoading
-            ? <div className="skeleton" style={{ height: 220 }} />
+            ? <div className="skeleton" style={{ height: CHART_HEIGHT }} />
             : agents.error
               ? <ErrorState error={agents.error} onRetry={agents.refetch} />
               : <AgentBar data={agents.data} />}
         </Panel>
+      </div>
 
+      {/* 4. Recent runs + per-agent tokens, full width */}
+      <div style={stack}>
         <Panel title="Recent Runs" actions={<Link to="/runs" className="btn btn-sm btn-ghost">View all</Link>} flush>
           {recentRuns.isLoading
-            ? <SkeletonTable rows={6} cols={3} />
+            ? <SkeletonTable rows={6} cols={4} />
             : recentRuns.error
               ? <ErrorState error={recentRuns.error} onRetry={recentRuns.refetch} />
               : (
@@ -211,6 +317,8 @@ export default function Dashboard() {
                 />
               )}
         </Panel>
+
+        <TokenByAgent query={tokenUsage} />
       </div>
     </>
   );
