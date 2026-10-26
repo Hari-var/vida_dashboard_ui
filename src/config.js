@@ -4,7 +4,7 @@ const THEME_KEY = "vida.theme";
 export const normalizeBaseUrl = (url) => (url || "").trim().replace(/\/+$/, "");
 
 export const DEFAULT_BASE_URL = normalizeBaseUrl(
-  import.meta.env.VITE_API_BASE_URL || "http://vida-admin-craqfpgpdchbbahg.westus3-01.azurewebsites.net/task-run-info"
+  import.meta.env.VITE_API_BASE_URL || "https://vida-admin-craqfpgpdchbbahg.westus3-01.azurewebsites.net/task-run-info"
 );
 
 export function getInitialBaseUrl() {

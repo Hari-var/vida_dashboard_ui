@@ -49,7 +49,7 @@ export default function Settings() {
                 className="input"
                 value={urlInput}
                 onChange={(e) => { setUrlInput(e.target.value); setTestState(null); }}
-                placeholder="http://vida-admin-craqfpgpdchbbahg.westus3-01.azurewebsites.net/task-run-info"
+                placeholder="https://vida-admin-craqfpgpdchbbahg.westus3-01.azurewebsites.net/task-run-info"
                 style={{ fontFamily: "var(--mono)", fontSize: 13 }}
               />
             </Field>

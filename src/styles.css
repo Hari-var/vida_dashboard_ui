@@ -227,3 +227,15 @@ code{font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px sol
   .modal{border-radius:var(--radius) var(--radius) 0 0;max-width:100%}
   .search-input{width:100%}
 }
+.sidebar-brand-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+.sidebar-subtitle {
+  font-size: 10.5px;
+  color: var(--text-muted, #7b8494);
+  white-space: normal;   /* wraps onto two lines inside a narrow sidebar */
+  margin-top: 2px;
+}

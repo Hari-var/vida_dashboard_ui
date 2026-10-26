@@ -53,9 +53,17 @@ export default function Layout() {
       <div className="shell">
         <aside className={`sidebar${collapsed ? " collapsed" : ""}${mobileOpen ? " mobile-open" : ""}`} aria-label="Main navigation">
           <div className="sidebar-header">
-            <img src="/Favicon_square-05.png" alt="Vida" className="sidebar-logo" style={{ width: collapsed ? 32 : 36, height: collapsed ? 32 : 36, objectFit: "contain", borderRadius: 6 }} />
+            <img
+              src="/Favicon_square-05.png"
+              alt="Vida"
+              className="sidebar-logo"
+              style={{ width: collapsed ? 32 : 36, height: collapsed ? 32 : 36, objectFit: "contain", borderRadius: 6 }}
+            />
             {!collapsed && (
-              <span className="sidebar-brand">VIDA <span>Console</span></span>
+              <div className="sidebar-brand-wrap">
+                <span className="sidebar-brand">VIDA <span>Console</span></span>
+                <span className="sidebar-subtitle">ValueMomentum Intelligent DevOps Agent</span>
+              </div>
             )}
           </div>
 
