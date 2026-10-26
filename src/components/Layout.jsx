@@ -10,6 +10,7 @@ import SettingsDialog from "./SettingsDialog.jsx";
 import { ToastContainer } from "./ui.jsx";
 
 const NAV = [
+  {to: "/overview", label: "Overview", icon: LayoutDashboard },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/agents", label: "Agents", icon: Bot },
   { to: "/tasks", label: "Tasks", icon: ListTodo },

@@ -1,0 +1,112 @@
+/* Overview page. Everything is scoped to .ov-* classes.
+   Map the --ov-* tokens below to your existing CSS variables (see INTEGRATION.md). */
+.ov-root {
+  --ov-surface: var(--surface, var(--card, var(--bg-card, #ffffff)));
+  --ov-surface-2: var(--surface-2, var(--bg-muted, rgba(127, 127, 127, 0.08)));
+  --ov-border: var(--border, rgba(127, 127, 127, 0.28));
+  --ov-muted: var(--text-muted, #7b8494);
+  --ov-accent: var(--primary, var(--accent, #3b82f6));
+  --ov-radius: var(--radius, 10px);
+  --ov-mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  padding-bottom: 80px;
+}
+.ov-hero p { max-width: 70ch; }
+.ov-section { margin-top: 32px; }
+.ov-section > h2 { margin: 0 0 6px; }
+.ov-section > p { max-width: 75ch; margin: 0 0 14px; }
+
+.ov-grid-3 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.ov-grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+
+.ov-card {
+  background: var(--ov-surface);
+  border: 1px solid var(--ov-border);
+  border-radius: var(--ov-radius);
+  padding: 16px;
+}
+.ov-card h3 { margin: 0; font-size: 15px; }
+.ov-card p { margin: 8px 0 12px; line-height: 1.5; }
+.ov-card header { display: flex; gap: 10px; align-items: center; }
+.ov-card.is-active { border-color: var(--c, var(--ov-accent)); box-shadow: 0 0 0 1px var(--c, var(--ov-accent)); }
+.text-muted { color: var(--ov-muted); }
+
+.ov-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--ov-accent)); flex: none; }
+.ov-tools-title { font-size: 12px; margin-bottom: 6px; }
+.ov-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.ov-chip {
+  font-size: 12px; padding: 3px 8px; border-radius: 999px;
+  background: var(--ov-surface-2); border: 1px solid var(--ov-border);
+}
+
+/* Page structure */
+.ov-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 18px; background: var(--ov-surface); border: 1px solid var(--ov-border); border-radius: var(--ov-radius); }
+.ov-stats > div { padding: 14px 18px; display: flex; flex-direction: column; gap: 2px; }
+.ov-stats > div + div { border-left: 1px solid var(--ov-border); }
+.ov-stats strong { font-size: 22px; }
+.ov-head { margin-bottom: 14px; }
+.ov-head h2 { margin: 0 0 4px; }
+.ov-head p { margin: 0; max-width: 75ch; }
+.ov-split { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; }
+
+/* Flow diagram */
+.ov-flow { padding: 0; overflow: hidden; }
+.ov-toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--ov-border); font-size: 13px; }
+.ov-legend { display: flex; gap: 16px; font-size: 12px; }
+.ov-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ov-key { width: 22px; height: 0; border-top: 2px solid; }
+.ov-key-ctl { border-top-style: dashed; border-color: var(--ov-muted); }
+.ov-key-heal { border-color: var(--ov-accent); }
+.ov-actions { display: flex; gap: 6px; }
+.ov-root .btn[aria-pressed="true"] { border-color: var(--ov-accent); }
+.ov-canvas svg { width: 100%; height: auto; display: block; user-select: none; }
+.ov-grid-line { fill: none; stroke: var(--ov-border); stroke-width: 1; opacity: 0.35; }
+.ov-edge { fill: none; stroke-linecap: round; }
+.ov-edge-ctl { stroke: var(--ov-muted); stroke-dasharray: 6 6; animation: ov-flow 1.4s linear infinite; }
+.ov-edge-heal { stroke: var(--c); }
+@keyframes ov-flow { to { stroke-dashoffset: -12; } }
+.ov-node { cursor: grab; outline: none; touch-action: none; }
+.ov-node:active { cursor: grabbing; }
+.ov-node rect { fill: var(--ov-surface); stroke: var(--ov-border); stroke-width: 1.5; }
+.ov-node circle { fill: var(--c); }
+.ov-node:hover rect, .ov-node:focus-visible rect, .ov-node.is-active rect { stroke: var(--c); stroke-width: 2.5; }
+.ov-node text { fill: currentColor; pointer-events: none; }
+.ov-node-name { font-size: 13px; font-weight: 600; }
+.ov-node-role { font-size: 11px; opacity: 0.6; }
+
+/* Inspector */
+.ov-inspector { border-color: var(--c); position: sticky; top: 16px; }
+.ov-ins-group { margin-bottom: 12px; }
+.ov-chip-btn { font: inherit; font-size: 12px; color: inherit; cursor: pointer; }
+.ov-chip-btn:hover { background: var(--ov-border); }
+.ov-endpoint { display: block; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--ov-border); background: var(--ov-surface-2); font-family: var(--ov-mono); font-size: 12px; overflow-x: auto; }
+
+/* Communicate */
+.ov-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.ov-tab {
+  font: inherit; font-size: 13px; cursor: pointer; color: inherit;
+  padding: 6px 12px; border-radius: 999px;
+  background: transparent; border: 1px solid var(--ov-border);
+}
+.ov-tab:hover { background: var(--ov-surface-2); }
+.ov-tab.is-active { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); font-weight: 600; }
+.ov-endpoints { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 13px; }
+.ov-endpoints td { padding: 7px 8px; border-bottom: 1px solid var(--ov-border); }
+.ov-endpoints code, .ov-root p code { font-family: var(--ov-mono); font-size: 12px; }
+.ov-method { font-family: var(--ov-mono); font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.ov-post { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.ov-get { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.ov-code { border: 1px solid var(--ov-border); border-radius: var(--ov-radius); background: var(--ov-surface-2); margin-bottom: 10px; overflow: hidden; }
+.ov-code-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--ov-border); font-size: 12px; }
+.ov-code pre { margin: 0; padding: 12px; overflow-x: auto; font-family: var(--ov-mono); font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 980px) {
+  .ov-split { grid-template-columns: 1fr; }
+  .ov-inspector { position: static; }
+}
+@media (max-width: 640px) {
+  .ov-stats { grid-template-columns: 1fr; }
+  .ov-stats > div + div { border-left: 0; border-top: 1px solid var(--ov-border); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ov-edge-ctl { animation: none; }
+}

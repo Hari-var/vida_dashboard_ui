@@ -12,6 +12,7 @@ const Runs = lazy(() => import("./pages/Runs.jsx"));
 const RunDetail = lazy(() => import("./pages/RunDetail.jsx"));
 const Metrics = lazy(() => import("./pages/Metrics.jsx"));
 const Settings = lazy(() => import("./pages/Settings.jsx"));
+const Overview = lazy(() => import("./pages/Overview.jsx"));
 
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -52,6 +53,7 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="overview" element={<Page><Overview /></Page>} />
         <Route path="dashboard" element={<Page><Dashboard /></Page>} />
         <Route path="agents" element={<Page><Agents /></Page>} />
         <Route path="agents/:agentId" element={<Page><AgentDetail /></Page>} />

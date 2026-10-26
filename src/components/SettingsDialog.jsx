@@ -52,7 +52,7 @@ export default function SettingsDialog({ onClose }) {
               style={{ fontFamily: "var(--mono)", fontSize: 13 }}
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="http://localhost:8000/task-run-info"
+              placeholder="http://vida-admin-craqfpgpdchbbahg.westus3-01.azurewebsites.net/task-run-info"
               autoFocus
             />
             <span className="help">
