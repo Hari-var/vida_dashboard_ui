@@ -194,10 +194,49 @@ function TokenSummary({ query }) {
 }
 
 /* Per-agent token table — lower priority, stays at the bottom */
-function TokenByAgent({ query }) {
+// function TokenByAgent({ query }) {
+//   const byAgent = query.data?.by_agent || {};
+//   const rows = Object.entries(byAgent).filter(([, v]) => v.total_token_count > 0);
+//   if (query.isLoading || query.error || !rows.length) return null;
+//   return (
+//     <Panel title="Token Usage by Agent">
+//       <div style={{ overflowX: "auto" }}>
+//         <table className="table">
+//           <thead>
+//             <tr>
+//               <th>Agent</th>
+//               {TOKEN_KPIS.map(({ label }) => <th key={label} style={{ textAlign: "right" }}>{label}</th>)}
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {rows.map(([agentId, v]) => (
+//               <tr key={agentId}>
+//                 <td><Link to={`/agents/${agentId}`}>Agent {agentId}</Link></td>
+//                 {TOKEN_KPIS.map(({ key }) => <td key={key} style={{ textAlign: "right" }} className="mono">{fmtNum(v[key])}</td>)}
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+//     </Panel>
+//   );
+// }
+
+function TokenByAgent({ query, agents }) {
   const byAgent = query.data?.by_agent || {};
-  const rows = Object.entries(byAgent).filter(([, v]) => v.total_token_count > 0);
+  const rows = Object.entries(byAgent).filter(
+    ([, v]) => v.total_token_count > 0
+  );
+
   if (query.isLoading || query.error || !rows.length) return null;
+
+  const agentNames = Object.fromEntries(
+    (agents || []).map((agent) => [
+      String(agent.id),
+      agent.agent_name,
+    ])
+  );
+
   return (
     <Panel title="Token Usage by Agent">
       <div style={{ overflowX: "auto" }}>
@@ -205,14 +244,30 @@ function TokenByAgent({ query }) {
           <thead>
             <tr>
               <th>Agent</th>
-              {TOKEN_KPIS.map(({ label }) => <th key={label} style={{ textAlign: "right" }}>{label}</th>)}
+              {TOKEN_KPIS.map(({ label }) => (
+                <th key={label} style={{ textAlign: "right" }}>
+                  {label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {rows.map(([agentId, v]) => (
               <tr key={agentId}>
-                <td><Link to={`/agents/${agentId}`}>Agent {agentId}</Link></td>
-                {TOKEN_KPIS.map(({ key }) => <td key={key} style={{ textAlign: "right" }} className="mono">{fmtNum(v[key])}</td>)}
+                <td>
+                  <Link to={`/agents/${agentId}`}>
+                    {agentNames[String(agentId)] || `Agent ${agentId}`}
+                  </Link>
+                </td>
+                {TOKEN_KPIS.map(({ key }) => (
+                  <td
+                    key={key}
+                    style={{ textAlign: "right" }}
+                    className="mono"
+                  >
+                    {fmtNum(v[key])}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
@@ -318,7 +373,10 @@ export default function Dashboard() {
               )}
         </Panel>
 
-        <TokenByAgent query={tokenUsage} />
+        <TokenByAgent
+          query={tokenUsage}
+          agents={agents.data || []}
+        />
       </div>
     </>
   );

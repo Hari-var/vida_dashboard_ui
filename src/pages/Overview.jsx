@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./overview.css";
 
-const BASE = "https://devops-agents.example.com/api/v1"; // dummy base URL
+const BASE = "https://devops-agents.com/api/v1"; // dummy base URL
 
 const pretty = (s) =>
   s.split("_").map((w) => ({ kv: "Key Vault", ado: "ADO", tf: "Terraform" }[w] || w[0].toUpperCase() + w.slice(1))).join(" ");
@@ -326,7 +326,7 @@ export default function Overview() {
   const call = (id) => { setSelected(id); document.getElementById("communicate")?.scrollIntoView({ behavior: "smooth" }); };
   return (
     <div className="ov-root">
-      <div className="page-header ov-hero">
+      <div className="ov-head">
         <h1>Overview</h1>
         <p className="text-muted">Six agents that build, deploy and repair your DevOps workflows. Use one on its own, combine a few, or run them all through the orchestrator.</p>
       </div>
