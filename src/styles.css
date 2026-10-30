@@ -200,7 +200,7 @@ code{font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px sol
 .divider{height:1px;background:var(--border);margin:16px 0}
 .help{color:var(--ink3);font-size:12.5px}
 .spacer{flex:1}
-.text-muted{color:var(--ink3)}
+/* .text-muted{color:var(--ink3)} */
 .text-sm{font-size:12.5px}
 .fw-600{font-weight:600}
 .api-pill{display:flex;align-items:center;gap:6px;background:var(--surface);color:var(--ink2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font:inherit;font-size:12.5px}
@@ -236,6 +236,19 @@ code{font-family:var(--mono);font-size:12px;background:var(--bg3);border:1px sol
 .sidebar-subtitle {
   font-size: 10.5px;
   color: var(--text-muted, #7b8494);
-  white-space: normal;   /* wraps onto two lines inside a narrow sidebar */
+  white-space: normal;  
   margin-top: 2px;
+}
+
+.ov-head {
+  width: 100%;
+  max-width: none;
+}
+
+.ov-head p.text-muted {
+  width: 100%;
+  max-width: none;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
 }

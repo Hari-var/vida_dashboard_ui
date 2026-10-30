@@ -328,7 +328,7 @@ export default function Overview() {
     <div className="ov-root">
       <div className="ov-head">
         <h1>Overview</h1>
-        <p className="text-muted">Six agents that build, deploy and repair your DevOps workflows. Use one on its own, combine a few, or run them all through the orchestrator.</p>
+        <p className="text-muted">AI agents that build, deploy and repair your DevOps workflows. Use one on its own, combine a few, or run them all through the orchestrator.</p>
       </div>
 
       <div className="ov-stats">
