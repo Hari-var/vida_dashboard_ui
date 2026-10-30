@@ -124,7 +124,7 @@ export default function Agents() {
             { key: "ok", label: "Success", align: "right", render: (a) => a.metrics?.total_success_runs ?? "—", sortValue: (a) => a.metrics?.total_success_runs ?? 0 },
             { key: "fail", label: "Failed", align: "right", render: (a) => a.metrics?.total_fail_runs ?? "—", sortValue: (a) => a.metrics?.total_fail_runs ?? 0 },
             { key: "created_by", label: "Created By" },
-            { key: "created_at", label: "Created", render: (a) => formatDate(a.created_at), sortValue: (a) => toTime(a.created_at) },
+            { key: "updated_at", label: "Last Updated", render: (a) => formatDate(a.updated_at), sortValue: (a) => toTime(a.updated_at) },
             {
               key: "actions", label: "", width: 50,
               render: (a) => (
